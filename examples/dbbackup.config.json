@@ -1,0 +1,81 @@
+{
+  "timezone": "UTC",
+  "stateDir": ".dbbackup",
+  "tempDir": null,
+  "maxParallelJobs": 1,
+
+  "encryption": {
+    "mode": "key",
+    "key": "${BACKUP_ENCRYPTION_KEY}",
+    "oldKeys": "${BACKUP_OLD_KEYS:-}"
+  },
+
+  "destinations": {
+    "s3": {
+      "type": "s3",
+      "bucket": "${S3_BUCKET}",
+      "region": "${AWS_REGION:-us-east-1}",
+      "prefix": "${S3_PREFIX:-backups}",
+      "endpoint": "${S3_ENDPOINT:-}",
+      "forcePathStyle": false,
+      "accessKeyId": "${AWS_ACCESS_KEY_ID:-}",
+      "secretAccessKey": "${AWS_SECRET_ACCESS_KEY:-}",
+      "storageClass": "STANDARD_IA",
+      "sse": "AES256"
+    },
+    "local": {
+      "type": "local",
+      "path": "${LOCAL_BACKUP_DIR:-./backups}"
+    }
+  },
+
+  "defaults": {
+    "schedule": "0 2 * * *",
+    "destinations": ["s3", "local"],
+    "compression": "auto",
+    "timeoutMinutes": 180,
+    "alertIfNoSuccessHours": 26,
+    "retention": { "keepLast": 7, "daily": 7, "weekly": 4, "monthly": 6, "yearly": 1 }
+  },
+
+  "notify": {
+    "on": ["failure", "partial", "stale", "recovered"],
+    "slack": "${SLACK_WEBHOOK_URL:-}",
+    "discord": "${DISCORD_WEBHOOK_URL:-}",
+    "telegram": { "botToken": "${TELEGRAM_BOT_TOKEN:-}", "chatId": "${TELEGRAM_CHAT_ID:-}" },
+    "webhook": { "url": "${ALERT_WEBHOOK_URL:-}", "secret": "${ALERT_WEBHOOK_SECRET:-}" },
+    "email": { "resendApiKey": "${RESEND_API_KEY:-}", "from": "${ALERT_EMAIL_FROM:-}", "to": "${ALERT_EMAIL_TO:-}" }
+  },
+
+  "jobs": [
+    {
+      "name": "app-postgres",
+      "type": "postgres",
+      "url": "${PG_URL:-postgres://postgres:postgres@localhost:5432/app}",
+      "format": "custom",
+      "schedule": "0 2 * * *",
+      "healthcheckUrl": "${HC_PG_URL:-}"
+    },
+    {
+      "name": "app-mongo",
+      "type": "mongodb",
+      "uri": "${MONGO_URI:-mongodb://localhost:27017/app}",
+      "schedule": "30 2 * * *",
+      "retention": { "monthly": 12 },
+      "healthcheckUrl": "${HC_MONGO_URL:-}"
+    },
+    {
+      "name": "crm-mysql",
+      "type": "mysql",
+      "url": "${MYSQL_URL:-mysql://root:root@localhost:3306/crm}",
+      "enabled": false
+    },
+    {
+      "name": "cache-redis",
+      "type": "command",
+      "dump": "redis-cli --rdb -",
+      "ext": "rdb",
+      "enabled": false
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "name": "db-backup-cloud-sync",
+  "version": "1.0.0",
+  "description": "Scheduled, encrypted PostgreSQL / MongoDB / MySQL / SQLite backups streamed to AWS S3 (or any S3-compatible storage) with retention, verification, restore drills and alerts.",
+  "type": "module",
+  "bin": {
+    "dbbackup": "bin/dbbackup.js"
+  },
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node bin/dbbackup.js daemon",
+    "demo": "node bin/dbbackup.js demo",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22.16"
+  },
+  "keywords": [
+    "backup",
+    "postgresql",
+    "mongodb",
+    "mysql",
+    "s3",
+    "encryption",
+    "cron",
+    "disaster-recovery"
+  ],
+  "license": "MIT",
+  "files": [
+    "bin",
+    "src",
+    "examples",
+    "README.md"
+  ],
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1172.0",
+    "@aws-sdk/lib-storage": "^3.1172.0",
+    "commander": "^15.1.0",
+    "node-cron": "^4.6.0"
+  }
+}

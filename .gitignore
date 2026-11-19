@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.dbbackup/
+backups/
+*.dbbk
+*.dbbk.partial
+*.pem
+dbbackup.config.json
+!examples/dbbackup.config.json
+*.log
+.DS_Store

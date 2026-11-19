@@ -1,0 +1,36 @@
+# Production: only the "dbbackup" service is needed (point PG_URL / MONGO_URI at your databases).
+# Local test lab:  docker compose --profile lab up -d   -> Postgres + Mongo + MinIO to try everything end to end.
+services:
+  dbbackup:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./dbbackup.config.json:/config/dbbackup.config.json:ro
+      - dbbackup-state:/config/.dbbackup
+      - ./backups:/config/backups
+    healthcheck:
+      test: ["CMD", "node", "/app/bin/dbbackup.js", "status", "-q"]
+      interval: 1h
+      start_period: 30s
+
+  postgres:
+    profiles: [lab]
+    image: postgres:17-alpine
+    environment: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: app }
+    ports: ["5432:5432"]
+
+  mongo:
+    profiles: [lab]
+    image: mongo:8
+    ports: ["27017:27017"]
+
+  minio:
+    profiles: [lab]
+    image: minio/minio:latest
+    command: server /data --console-address :9001
+    environment: { MINIO_ROOT_USER: minio, MINIO_ROOT_PASSWORD: minio-secret }
+    ports: ["9000:9000", "9001:9001"]
+
+volumes:
+  dbbackup-state:
